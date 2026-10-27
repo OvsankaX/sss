@@ -177,9 +177,15 @@ function toggleGradesTable(){
   }
 }
 function animateTheme(button){
-  const rect=button.getBoundingClientRect();document.documentElement.style.setProperty("--theme-x",`${rect.left+rect.width/2}px`);document.documentElement.style.setProperty("--theme-y",`${rect.top+rect.height/2}px`);
+  const rect=button.getBoundingClientRect(),x=rect.left+rect.width/2,y=rect.top+rect.height/2;
+  const radius=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+  const root=document.documentElement;
+  root.style.setProperty("--theme-x",`${x}px`);root.style.setProperty("--theme-y",`${y}px`);root.style.setProperty("--theme-radius",`${radius}px`);
   const apply=()=>{document.body.dataset.theme=document.body.dataset.theme==="light"?"dark":"light";localStorage.setItem("zhopa.theme",document.body.dataset.theme);const light=document.body.dataset.theme==="light";setIcon($("#themeIcon"),light?"moon":"sun");button.setAttribute("aria-label",light?"Включить тёмную тему":"Включить светлую тему");};
-  if(document.startViewTransition&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.startViewTransition(apply);else apply();
+  button.classList.remove("theme-changing");void button.offsetWidth;button.classList.add("theme-changing");
+  const finish=()=>button.classList.remove("theme-changing");
+  if(document.startViewTransition&&!matchMedia("(prefers-reduced-motion: reduce)").matches){const transition=document.startViewTransition(apply);transition.finished.then(finish,finish);}
+  else{apply();setTimeout(finish,460);}
 }
 function setup(){
   const body=document.body,savedTheme=localStorage.getItem("zhopa.theme")==="light"?"light":"dark",savedAccent=localStorage.getItem("zhopa.accent")||"#bd334c";

@@ -68,3 +68,13 @@ body[data-theme="light"] .glow-orb{opacity:.34;mix-blend-mode:multiply}
 @media(max-width:560px){.table-head,.student-row{grid-template-columns:minmax(0,1fr) 58px 48px 34px;column-gap:3px}.table-head{padding-inline:6px}.table-head>button{padding-inline:4px}.table-head>button.selected{padding-inline:6px}.student-row{padding-inline:6px}}
 
 .schedule-face .schedule-duration{display:flex;flex-direction:column;align-items:flex-end;gap:2px;line-height:1.05;white-space:nowrap}.schedule-face .schedule-duration strong{font:700 10px Manrope,sans-serif;color:var(--accent-light)}.schedule-face .schedule-duration small{font:500 8px Manrope,sans-serif;color:var(--muted)}.schedule-face .schedule-duration:has(strong:only-child){align-self:center}
+
+/* Theme changes reveal from the sun/moon control instead of cross-fading the whole page. */
+::view-transition-old(root){animation:none;z-index:0}
+::view-transition-new(root){z-index:1;animation:theme-circle-reveal .72s cubic-bezier(.2,.78,.22,1) both;clip-path:circle(0 at var(--theme-x,50%) var(--theme-y,50%))}
+@keyframes theme-circle-reveal{to{clip-path:circle(var(--theme-radius,150vmax) at var(--theme-x,50%) var(--theme-y,50%))}}
+.theme-toggle .icon-mask{transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+.theme-toggle.theme-changing .icon-mask{transform:rotate(180deg) scale(.76)}
+.glow-orb{will-change:auto}
+@media(max-width:560px){.glow-orb{filter:blur(16px);mix-blend-mode:normal}.orb-three,.orb-four{display:none}.ambient:before{filter:blur(28px);animation-duration:26s}.ambient-specks{animation:none;opacity:.1}}
+@media(prefers-reduced-motion:reduce){::view-transition-new(root){animation:none;clip-path:none}.glow-orb,.ambient:before,.ambient-specks{animation:none!important}.theme-toggle .icon-mask{transition:none}}
