@@ -39,7 +39,12 @@ function clockMinutes(){
 }
 function formatWait(minutes){const hours=Math.floor(minutes/60),rest=minutes%60;return hours?`${hours} ч${rest?` ${rest} мин`:""}`:`${rest} мин`;}
 function renderSchedule(activeIndex=-1){
-  $("#scheduleRows").innerHTML=LESSONS.map(([start,end],index)=>`<div class="schedule-row ${index===activeIndex?"active":""}"><span class="schedule-lesson">Урок ${index+1}</span><span class="schedule-time">${start} — ${end}</span><span class="schedule-duration">45 минут</span></div>`).join("");
+  $("#scheduleRows").innerHTML=LESSONS.map(([start,end],index)=>{
+    const nextStart=LESSONS[index+1]?.[0];
+    const breakMinutes=nextStart?nextStart.split(":").map(Number).reduce((hours,minutes)=>hours*60+minutes,0)-end.split(":").map(Number).reduce((hours,minutes)=>hours*60+minutes,0):null;
+    const breakLabel=breakMinutes===null?"<strong>Конец</strong>":`<strong>${breakMinutes} мин</strong><small>перемена</small>`;
+    return `<div class="schedule-row ${index===activeIndex?"active":""}"><span class="schedule-lesson">Урок ${index+1}</span><span class="schedule-time">${start} — ${end}</span><span class="schedule-duration">${breakLabel}</span></div>`;
+  }).join("");
 }
 function setRange(start,end){
   const range=$("#timeRange");range.hidden=false;
@@ -191,8 +196,10 @@ function setup(){
   setIcon($("#expandIcon"),"chevron-down");
   setIcon($(".accent-chevron"),"chevron-down");
   $("#scheduleToggle").addEventListener("click",()=>{const card=$(".now-card"),button=$("#scheduleToggle"),open=!card.classList.contains("show-schedule");card.classList.toggle("show-schedule",open);$("#statusFace").setAttribute("aria-hidden",String(open));$("#scheduleFace").setAttribute("aria-hidden",String(!open));button.setAttribute("aria-expanded",String(open));button.setAttribute("aria-label",open?"Вернуться к статусу расписания":"Открыть расписание звонков");$("#scheduleToggleText").textContent=open?"К статусу":"Расписание";});
-  $("#searchForm").addEventListener("submit",event=>{event.preventDefault();showResult($("#surnameInput").value);});
-  localStorage.removeItem("zhopa.surname");
+  const surnameInput=$("#surnameInput");
+  surnameInput.value=localStorage.getItem("zhopa.surname")||"";
+  surnameInput.addEventListener("input",()=>{const surname=surnameInput.value.trim();if(surname)localStorage.setItem("zhopa.surname",surname);else localStorage.removeItem("zhopa.surname");});
+  $("#searchForm").addEventListener("submit",event=>{event.preventDefault();const surname=surnameInput.value.trim();if(surname)localStorage.setItem("zhopa.surname",surname);showResult(surname);});
   $("#tableToggle").addEventListener("click",toggleGradesTable);
   $("#gradesTable").addEventListener("transitionend",event=>{if(event.target!==event.currentTarget||event.propertyName!=="max-height")return;if(event.currentTarget.classList.contains("expanded"))event.currentTarget.style.maxHeight="none";else event.currentTarget.hidden=true;});
   $("#tableSearch").addEventListener("input",renderGradeTable);
